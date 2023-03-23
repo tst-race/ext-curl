@@ -27,7 +27,13 @@ import race_ext_builder as builder
 
 def get_cli_arguments():
     """Parse command-line arguments to the script"""
-    parser = builder.get_arg_parser("curl", "7.58.0", 1, __file__, [builder.TARGET_ANDROID_x86_64, builder.TARGET_ANDROID_arm64_v8a])
+    parser = builder.get_arg_parser(
+        "curl",
+        "7.58.0",
+        1,
+        __file__,
+        [builder.TARGET_ANDROID_x86_64, builder.TARGET_ANDROID_arm64_v8a],
+    )
     return builder.normalize_args(parser.parse_args())
 
 
@@ -36,10 +42,13 @@ if __name__ == "__main__":
     builder.make_dirs(args)
     builder.setup_logger(args)
 
-    builder.install_packages(args, [
-        "automake=1:1.16.1*",
-        "libtool=2.4.6*",
-    ])
+    builder.install_packages(
+        args,
+        [
+            "automake=1:1.16.1*",
+            "libtool=2.4.6*",
+        ],
+    )
 
     builder.fetch_source(
         args=args,
@@ -47,36 +56,58 @@ if __name__ == "__main__":
         extract="tar.gz",
     )
 
-    source_dir = os.path.join(args.source_dir, f"curl-curl-{args.version.replace('.', '_')}")
+    source_dir = os.path.join(
+        args.source_dir, f"curl-curl-{args.version.replace('.', '_')}"
+    )
     env = builder.create_standard_envvars(args)
 
     logging.root.info("Configuring build")
-    builder.execute(args, [
-        "autoreconf",
-        "--install",
-    ], cwd=source_dir, env=env)
+    builder.execute(
+        args,
+        [
+            "autoreconf",
+            "--install",
+        ],
+        cwd=source_dir,
+        env=env,
+    )
 
     target = "x86_64-linux-android" if "x86" in args.target else "aarch64-linux-android"
-    builder.execute(args, [
-        "./configure",
-        "--prefix=/",
-        f"--host={target}",
-        f"--target={target}",
-        "--disable-shared",
-        "--without-zlib",
-        "--without-idn",
-    ], cwd=source_dir, env=env)
+    builder.execute(
+        args,
+        [
+            "./configure",
+            "--prefix=/",
+            f"--host={target}",
+            f"--target={target}",
+            "--disable-shared",
+            "--without-zlib",
+            "--without-idn",
+        ],
+        cwd=source_dir,
+        env=env,
+    )
 
     logging.root.info("Building")
-    builder.execute(args, [
-        "make",
-        "-j",
-        args.num_threads,
-    ], cwd=source_dir, env=env)
-    builder.execute(args, [
-        "make",
-        f"DESTDIR={args.install_dir}",
-        "install",
-    ], cwd=source_dir, env=env)
+    builder.execute(
+        args,
+        [
+            "make",
+            "-j",
+            args.num_threads,
+        ],
+        cwd=source_dir,
+        env=env,
+    )
+    builder.execute(
+        args,
+        [
+            "make",
+            f"DESTDIR={args.install_dir}",
+            "install",
+        ],
+        cwd=source_dir,
+        env=env,
+    )
 
     builder.create_package(args)
