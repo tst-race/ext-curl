@@ -17,7 +17,7 @@
 #
 
 """
-Script to build cURL for RACE
+Script to build curl for RACE
 """
 
 import logging
